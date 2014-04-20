@@ -1,28 +1,32 @@
 include:
-  - devel.git
+  - vcs.git
   - editors.vim
 
-vim-config:
+{% for name, user in pillar.get('users', {}).items() %}
+{%- if user == None -%}
+{%- set user = {} -%}
+{%- endif -%}
+{%- set home = user.get('home', "/home/%s" % name) -%}
+
+{%- if 'prime_group' in user and 'name' in user['prime_group'] %}
+{%- set user_group = user.prime_group.name -%}
+{%- else -%}
+{%- set user_group = name -%}
+{%- endif %}
+
+{{ name }}_vim-config:
   git.latest:
-    - name: git://github.com/tony/vim-config.git
-    - runas: {{ pillar['username'] }}
-    - target: /home/{{ pillar['username'] }}/.vim
+    - name: https://github.com/tony/vim-config.git
+    - user: {{ name }}
+    - target: {{ home }}/.vim
     - submodules: true
     - require:
       - pkg: git
       - pkg: vim
   file.symlink:
-    - name: /home/{{ pillar['username'] }}/.vimrc
-    - target: /home/{{ pillar['username'] }}/.vim/.vimrc
+    - name: {{ home }}/.vimrc
+    - target: {{ home }}/.vim/.vimrc
     - require:
-      - git: vim-config
+      - git: {{ name }}_vim-config
 
-vim-localconf:
-  file.managed:
-    - name: /home/{{ pillar['username'] }}/.vimrc.local
-    - source: salt://tony/home/.vimrc.local
-    - user: {{ pillar['username'] }}
-    - group: {{ pillar['username'] }}
-    - mode: 644
-    - require:
-      - git: vim-config
+{% endfor %}
