@@ -1,18 +1,33 @@
 include:
   - sysutils.tmux
-  - devel.git
+  - vcs.git
 
-tmux-config:
+
+{% for name, user in pillar.get('users', {}).items() %}
+{%- if user == None -%}
+{%- set user = {} -%}
+{%- endif -%}
+{%- set home = user.get('home', "/home/%s" % name) -%}
+
+{%- if 'prime_group' in user and 'name' in user['prime_group'] %}
+{%- set user_group = user.prime_group.name -%}
+{%- else -%}
+{%- set user_group = name -%}
+{%- endif %}
+
+{{ name }}_tmux-config:
     git.latest:
-      - name: git://github.com/tony/tmux-config.git
-      - runas: {{ pillar['username'] }}
-      - target: /home/{{ pillar['username'] }}/.tmux
+      - name: https://github.com/tony/tmux-config.git
+      - runas: {{ name }}
+      - target: {{ home }}/.tmux
       - submodules: true
       - require:
         - pkg: git
         - pkg: tmux
     file.symlink:
-      - name: /home/{{ pillar['username'] }}/.tmux.conf
-      - target: /home/{{ pillar['username'] }}/.tmux/.tmux.conf
+      - name: {{ home }}/.tmux.conf
+      - target: {{ home }}/.tmux/.tmux.conf
       - require:
-        - git: tmux-config
+        - git: {{ name }}_tmux-config
+
+{% endfor %}
