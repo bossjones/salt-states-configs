@@ -1,7 +1,7 @@
 include:
+  - users
   - sysutils.tmux
   - vcs.git
-
 
 {% for name, user in pillar.get('users', {}).items() %}
 {%- if user == None -%}
@@ -24,6 +24,7 @@ include:
       - require:
         - pkg: git
         - pkg: tmux
+        - user: {{ name }}_user
     file.symlink:
       - name: {{ home }}/.tmux.conf
       - target: {{ home }}/.tmux/.tmux.conf

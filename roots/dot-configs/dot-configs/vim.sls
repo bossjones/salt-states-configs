@@ -1,4 +1,5 @@
 include:
+  - users
   - vcs.git
   - editors.vim
 
@@ -23,6 +24,7 @@ include:
     - require:
       - pkg: git
       - pkg: vim
+      - user: {{ name }}_user
   file.symlink:
     - name: {{ home }}/.vimrc
     - target: {{ home }}/.vim/.vimrc
